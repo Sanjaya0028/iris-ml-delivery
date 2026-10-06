@@ -12,7 +12,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-
+    outputs:
+      image_ref: "${{ steps.naming.outputs.image }}@${{ steps.build.outputs.digest }}"
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
@@ -21,7 +22,6 @@ jobs:
         id: naming
         run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
-        
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -34,7 +34,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Build and push image
         id: build
         uses: docker/build-push-action@v6
@@ -45,5 +45,3 @@ jobs:
           tags: ${{ steps.naming.outputs.image }}:sha-${{ github.sha }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-                outputs:
-      image_ref: ${{ steps.naming.outputs.image }}@${{ steps.build.outputs.digest }}
